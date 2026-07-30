@@ -43,7 +43,7 @@ function holdingValueUsd(holding) {
     return holding.grams * props.goldPricePerGramUsd * (holding.karat / 24);
 }
 
-function holdingValueEgp(holding) {
+function holdingGoldValueEgp(holding) {
     const pricePerGram = props.goldEgpPricesByKarat[holding.karat];
 
     if (pricePerGram == null) {
@@ -51,6 +51,20 @@ function holdingValueEgp(holding) {
     }
 
     return holding.grams * pricePerGram;
+}
+
+function holdingManufacturingCost(holding) {
+    return holding.grams * Number(holding.manufacturing_cost_per_gram ?? 0);
+}
+
+function holdingValueEgp(holding) {
+    const goldValue = holdingGoldValueEgp(holding);
+
+    if (goldValue === null) {
+        return null;
+    }
+
+    return goldValue + holdingManufacturingCost(holding);
 }
 
 const totalValueUsd = computed(() => {
@@ -69,12 +83,49 @@ const totalValueEgp = computed(() => {
     return props.holdings.reduce((sum, holding) => sum + holdingValueEgp(holding), 0);
 });
 
+const totalManufacturingCost = computed(() =>
+    props.holdings.reduce((sum, holding) => sum + holdingManufacturingCost(holding), 0),
+);
+
+function holdingPurchasePrice(holding) {
+    return holding.purchase_price != null ? Number(holding.purchase_price) : null;
+}
+
+function holdingNetProfitEgp(holding) {
+    const purchasePrice = holdingPurchasePrice(holding);
+    const currentValue = holdingValueEgp(holding);
+
+    if (purchasePrice === null || currentValue === null) {
+        return null;
+    }
+
+    return currentValue - purchasePrice;
+}
+
+const holdingsWithPurchasePrice = computed(() =>
+    props.holdings.filter((holding) => holdingPurchasePrice(holding) !== null),
+);
+
+const totalInvested = computed(() =>
+    holdingsWithPurchasePrice.value.reduce((sum, holding) => sum + holdingPurchasePrice(holding), 0),
+);
+
+const totalNetProfit = computed(() => {
+    if (holdingsWithPurchasePrice.value.some((holding) => holdingValueEgp(holding) === null)) {
+        return null;
+    }
+
+    return holdingsWithPurchasePrice.value.reduce((sum, holding) => sum + holdingNetProfitEgp(holding), 0);
+});
+
 const showModal = ref(false);
 const editing = ref(null);
 
 const form = useForm({
     grams: '',
     karat: 21,
+    manufacturing_cost_per_gram: 0,
+    purchase_price: '',
     note: '',
 });
 
@@ -83,6 +134,7 @@ function openCreate() {
     form.reset();
     form.clearErrors();
     form.karat = 21;
+    form.manufacturing_cost_per_gram = 0;
     showModal.value = true;
 }
 
@@ -91,6 +143,8 @@ function openEdit(holding) {
     form.clearErrors();
     form.grams = holding.grams;
     form.karat = holding.karat;
+    form.manufacturing_cost_per_gram = holding.manufacturing_cost_per_gram ?? 0;
+    form.purchase_price = holding.purchase_price ?? '';
     form.note = holding.note ?? '';
     showModal.value = true;
 }
@@ -165,11 +219,29 @@ function confirmDelete() {
                             <div v-if="totalValueEgp !== null" class="text-lg text-gray-600 dark:text-gray-300">
                                 {{ formatMoney(totalValueEgp, 'EGP') }}
                             </div>
+                            <div v-if="totalManufacturingCost > 0" class="text-xs text-gray-400 dark:text-gray-500">
+                                {{ t('gold.includesManufacturing', { amount: formatMoney(totalManufacturingCost, 'EGP') }) }}
+                            </div>
                         </div>
                         <div v-if="goldPricePerGramUsd !== null || goldEgpPricesByKarat[24] != null" class="text-right text-sm text-gray-500 dark:text-gray-400">
                             {{ t('gold.pricePerGram24k') }}<br />
                             <template v-if="goldPricePerGramUsd !== null">{{ formatMoney(goldPricePerGramUsd, 'USD') }}<br /></template>
                             <template v-if="goldEgpPricesByKarat[24] != null">{{ formatMoney(goldEgpPricesByKarat[24], 'EGP') }}</template>
+                        </div>
+                    </div>
+                    <div v-if="totalNetProfit !== null" class="flex items-center justify-between border-t border-gray-100 p-4 dark:border-gray-700">
+                        <div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ t('gold.totalInvested') }}</div>
+                            <div class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ formatMoney(totalInvested, 'EGP') }}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ t('gold.netProfit') }}</div>
+                            <div
+                                class="text-lg font-medium"
+                                :class="totalNetProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+                            >
+                                {{ totalNetProfit >= 0 ? '+' : '' }}{{ formatMoney(totalNetProfit, 'EGP') }}
+                            </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5 border-t border-gray-100 px-4 py-2 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
@@ -204,6 +276,18 @@ function confirmDelete() {
                                     </template>
                                     <template v-else>{{ t('gold.priceUnavailable') }}</template>
                                 </div>
+                                <div v-if="holdingManufacturingCost(holding) > 0" class="text-xs text-gray-400 dark:text-gray-500">
+                                    {{ t('gold.includesManufacturing', { amount: formatMoney(holdingManufacturingCost(holding), 'EGP') }) }}
+                                </div>
+                                <div v-if="holdingNetProfitEgp(holding) !== null" class="text-xs">
+                                    {{ t('gold.purchasedFor', { amount: formatMoney(holdingPurchasePrice(holding), 'EGP') }) }}
+                                    &middot;
+                                    <span
+                                        :class="holdingNetProfitEgp(holding) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+                                    >
+                                        {{ holdingNetProfitEgp(holding) >= 0 ? '+' : '' }}{{ formatMoney(holdingNetProfitEgp(holding), 'EGP') }}
+                                    </span>
+                                </div>
                             </div>
                             <div class="flex gap-2">
                                 <SecondaryButton @click="openEdit(holding)">{{ t('common.edit') }}</SecondaryButton>
@@ -236,6 +320,31 @@ function confirmDelete() {
                         <option v-for="k in karats" :key="k" :value="k">{{ k }}K</option>
                     </SelectInput>
                     <InputError :message="form.errors.karat" class="mt-2" />
+                </div>
+
+                <div class="mt-4">
+                    <InputLabel :value="t('gold.manufacturingCostPerGram')" />
+                    <TextInput
+                        v-model="form.manufacturing_cost_per_gram"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        class="mt-1 block w-full"
+                    />
+                    <InputError :message="form.errors.manufacturing_cost_per_gram" class="mt-2" />
+                </div>
+
+                <div class="mt-4">
+                    <InputLabel :value="t('gold.purchasePrice')" />
+                    <TextInput
+                        v-model="form.purchase_price"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        :placeholder="t('gold.purchasePricePlaceholder')"
+                        class="mt-1 block w-full"
+                    />
+                    <InputError :message="form.errors.purchase_price" class="mt-2" />
                 </div>
 
                 <div class="mt-4">
