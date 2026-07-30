@@ -311,7 +311,14 @@
         "totalValue": "Total Estimated Value",
         "pricePerGram24k": "Price per gram (24K)",
         "priceUnavailable": "Price unavailable",
-        "liveMarketValue": "Reflects the current live market price"
+        "liveMarketValue": "Reflects the current live market price",
+        "manufacturingCostPerGram": "Manufacturing Cost per Gram (EGP)",
+        "includesManufacturing": "Includes {amount} manufacturing cost",
+        "purchasePrice": "Purchase Price (EGP, total)",
+        "purchasePricePlaceholder": "e.g. what you paid for this piece",
+        "purchasedFor": "Bought for {amount}",
+        "totalInvested": "Total Invested",
+        "netProfit": "Net Profit"
     },
     "gifts": {
         "title": "Gifts & Windfalls",
@@ -328,7 +335,7 @@
         "sourceTo": "To",
         "sourcePlaceholder": "e.g. Uncle Ahmad",
         "amount": "Amount",
-        "currency": "Currency",
+        "account": "Account",
         "date": "Date",
         "note": "Note",
         "deleteTitle": "Delete this gift?",

@@ -311,7 +311,14 @@
         "totalValue": "إجمالي القيمة التقديرية",
         "pricePerGram24k": "سعر الجرام (عيار 24)",
         "priceUnavailable": "السعر غير متاح",
-        "liveMarketValue": "يعكس السعر الحالي في السوق"
+        "liveMarketValue": "يعكس السعر الحالي في السوق",
+        "manufacturingCostPerGram": "مصنعية الجرام (جنيه مصري)",
+        "includesManufacturing": "شامل مصنعية {amount}",
+        "purchasePrice": "سعر الشراء (جنيه مصري، إجمالي)",
+        "purchasePricePlaceholder": "مثال: المبلغ الذي دفعته مقابل هذه القطعة",
+        "purchasedFor": "تم الشراء مقابل {amount}",
+        "totalInvested": "إجمالي المبلغ المستثمر",
+        "netProfit": "صافي الربح"
     },
     "gifts": {
         "title": "الهدايا والأموال غير المتوقعة",
@@ -328,7 +335,7 @@
         "sourceTo": "إلى",
         "sourcePlaceholder": "مثال: العم أحمد",
         "amount": "المبلغ",
-        "currency": "العملة",
+        "account": "الحساب",
         "date": "التاريخ",
         "note": "ملاحظة",
         "deleteTitle": "حذف هذه الهدية؟",
