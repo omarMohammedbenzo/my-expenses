@@ -1,0 +1,382 @@
+<script setup>
+import { ref } from 'vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import Modal from '@/Components/Modal.vue';
+import ConfirmDeleteModal from '@/Components/ConfirmDeleteModal.vue';
+import ColorDot from '@/Components/ColorDot.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import TextInput from '@/Components/TextInput.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import InputError from '@/Components/InputError.vue';
+import SelectInput from '@/Components/SelectInput.vue';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
+import { useToast } from '@/composables/useToast';
+
+const { t } = useI18n();
+const toast = useToast();
+
+const props = defineProps({
+    expenses: Object,
+    categories: Array,
+    accounts: Array,
+    totals: Array,
+    month: String,
+    from: String,
+    to: String,
+});
+
+const today = new Date().toISOString().slice(0, 10);
+
+// Date filter: either a single month, or a from/to range
+const filterMode = ref(props.from || props.to ? 'range' : 'month');
+const monthFilter = ref(props.month ?? today.slice(0, 7));
+const fromFilter = ref(props.from ?? '');
+const toFilter = ref(props.to ?? '');
+
+function applyMonthFilter() {
+    filterMode.value = 'month';
+    router.get(route('expenses.index'), { month: monthFilter.value }, { preserveState: true });
+}
+
+function applyRangeFilter() {
+    filterMode.value = 'range';
+    router.get(
+        route('expenses.index'),
+        { from: fromFilter.value || undefined, to: toFilter.value || undefined },
+        { preserveState: true },
+    );
+}
+
+function switchFilterMode(mode) {
+    filterMode.value = mode;
+    if (mode === 'month') {
+        applyMonthFilter();
+    }
+}
+
+// Expense modal
+const showModal = ref(false);
+const editing = ref(null);
+const form = useForm({
+    category_id: props.categories[0]?.id ?? null,
+    account_id: props.accounts[0]?.id ?? null,
+    amount: '',
+    date: today,
+    note: '',
+    location: '',
+});
+
+function openCreate() {
+    editing.value = null;
+    form.reset();
+    form.clearErrors();
+    form.category_id = props.categories[0]?.id ?? null;
+    form.account_id = props.accounts[0]?.id ?? null;
+    form.date = today;
+    showModal.value = true;
+}
+
+function openEdit(expense) {
+    editing.value = expense;
+    form.clearErrors();
+    form.category_id = expense.category_id;
+    form.account_id = expense.account_id;
+    form.amount = expense.amount;
+    form.date = expense.date;
+    form.note = expense.note ?? '';
+    form.location = expense.location ?? '';
+    showModal.value = true;
+}
+
+function submit() {
+    if (editing.value) {
+        form.put(route('expenses.update', editing.value.id), {
+            onSuccess: () => {
+                showModal.value = false;
+                toast.success(t('toast.updated'));
+            },
+            onError: () => toast.error(t('toast.error')),
+        });
+    } else {
+        form.post(route('expenses.store'), {
+            onSuccess: () => {
+                showModal.value = false;
+                form.reset();
+                toast.success(t('toast.created'));
+            },
+            onError: () => toast.error(t('toast.error')),
+        });
+    }
+}
+
+const confirmingDelete = ref(null);
+const deleteForm = useForm({});
+
+function askDelete(expense) {
+    confirmingDelete.value = expense;
+}
+
+function cancelDelete() {
+    confirmingDelete.value = null;
+}
+
+function confirmDelete() {
+    deleteForm.delete(route('expenses.destroy', confirmingDelete.value.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            confirmingDelete.value = null;
+            toast.success(t('toast.deleted'));
+        },
+        onError: () => toast.error(t('toast.error')),
+    });
+}
+
+// Category modal
+const showCategoryModal = ref(false);
+const categoryForm = useForm({ name: '', icon: '' });
+function submitCategory() {
+    categoryForm.post(route('expense-categories.store'), {
+        onSuccess: () => {
+            categoryForm.reset();
+            toast.success(t('toast.created'));
+        },
+        onError: () => toast.error(t('toast.error')),
+    });
+}
+
+function accountLabel(account) {
+    return `${account.nickname || account.institution.name} (${account.currency})`;
+}
+</script>
+
+<template>
+    <Head :title="t('expenses.title')" />
+
+    <AuthenticatedLayout>
+        <template #header>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                    {{ t('expenses.title') }}
+                </h2>
+                <div class="flex flex-wrap items-center gap-2">
+                    <SecondaryButton @click="showCategoryModal = true">{{ t('expenses.manageCategories') }}</SecondaryButton>
+                    <PrimaryButton @click="openCreate">{{ t('expenses.addExpense') }}</PrimaryButton>
+                </div>
+            </div>
+
+            <div class="mt-4 flex flex-wrap items-center gap-2">
+                <div class="flex rounded-md shadow-sm">
+                    <button
+                        type="button"
+                        @click="switchFilterMode('month')"
+                        class="rounded-s-md border px-3 py-1.5 text-sm font-medium"
+                        :class="filterMode === 'month'
+                            ? 'border-vue-500 bg-vue-500 text-white'
+                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'"
+                    >
+                        {{ t('expenses.filterByMonth') }}
+                    </button>
+                    <button
+                        type="button"
+                        @click="switchFilterMode('range')"
+                        class="rounded-e-md border border-s-0 px-3 py-1.5 text-sm font-medium"
+                        :class="filterMode === 'range'
+                            ? 'border-vue-500 bg-vue-500 text-white'
+                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'"
+                    >
+                        {{ t('expenses.filterByRange') }}
+                    </button>
+                </div>
+
+                <TextInput
+                    v-if="filterMode === 'month'"
+                    v-model="monthFilter"
+                    type="month"
+                    @change="applyMonthFilter"
+                />
+
+                <template v-else>
+                    <InputLabel :value="t('expenses.from')" class="sr-only" />
+                    <TextInput v-model="fromFilter" type="date" @change="applyRangeFilter" />
+                    <InputLabel :value="t('expenses.to')" class="sr-only" />
+                    <TextInput v-model="toFilter" type="date" @change="applyRangeFilter" />
+                </template>
+            </div>
+        </template>
+
+        <div class="py-12">
+            <div class="mx-auto max-w-5xl sm:px-6 lg:px-8">
+                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
+                    <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-4 py-2 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('expenses.table.row') }}</th>
+                                <th class="px-4 py-2 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('expenses.table.date') }}</th>
+                                <th class="px-4 py-2 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('expenses.table.category') }}</th>
+                                <th class="px-4 py-2 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('expenses.table.account') }}</th>
+                                <th class="px-4 py-2 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('expenses.table.note') }}</th>
+                                <th class="px-4 py-2 text-end text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('expenses.table.amount') }}</th>
+                                <th class="px-4 py-2"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            <tr v-for="(expense, index) in expenses.data" :key="expense.id">
+                                <td class="px-4 py-2 text-sm text-gray-400 dark:text-gray-500">{{ expenses.from + index }}</td>
+                                <td class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{{ expense.date }}</td>
+                                <td class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <span v-if="expense.category?.icon">{{ expense.category.icon }}</span>
+                                    {{ expense.category?.name }}
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <ColorDot :color="expense.account?.institution?.color" />
+                                        {{ expense.account?.nickname || expense.account?.institution?.name }}
+                                        <span class="text-gray-400 dark:text-gray-500">({{ expense.account?.currency }})</span>
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{{ expense.note }}</td>
+                                <td class="px-4 py-2 text-end text-sm font-medium text-red-600 dark:text-red-400">
+                                    -{{ expense.amount }} {{ expense.account?.currency }}
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-2 text-end text-sm">
+                                    <SecondaryButton @click="openEdit(expense)">{{ t('common.edit') }}</SecondaryButton>
+                                    <DangerButton class="ms-2" @click="askDelete(expense)">{{ t('common.delete') }}</DangerButton>
+                                </td>
+                            </tr>
+                            <tr v-if="expenses.data.length === 0">
+                                <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                                    {{ t('expenses.noExpensesMonth') }}
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot v-if="totals.length > 0" class="border-t-2 border-gray-200 dark:border-gray-600">
+                            <tr v-for="row in totals" :key="row.currency">
+                                <td colspan="4" class="px-4 py-2 text-end text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    {{ t('expenses.total') }}
+                                </td>
+                                <td class="px-4 py-2 text-end text-sm font-bold text-red-600 dark:text-red-400">
+                                    -{{ row.total }} {{ row.currency }}
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div v-if="expenses.links?.length > 3" class="mt-4 flex flex-wrap gap-1">
+                    <template v-for="link in expenses.links" :key="link.label">
+                        <button
+                            v-if="link.url"
+                            @click="router.get(link.url, {}, { preserveState: true })"
+                            v-html="link.label"
+                            class="rounded border px-3 py-1 text-sm"
+                            :class="link.active ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-800' : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-300'"
+                        />
+                        <span
+                            v-else
+                            v-html="link.label"
+                            class="rounded border px-3 py-1 text-sm text-gray-400"
+                        />
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense modal -->
+        <Modal :show="showModal" @close="showModal = false">
+            <form @submit.prevent="submit" class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    {{ editing ? t('expenses.editExpense') : t('expenses.addExpense') }}
+                </h2>
+
+                <div class="mt-4">
+                    <InputLabel :value="t('expenses.category')" />
+                    <SelectInput v-model="form.category_id" class="mt-1 block w-full">
+                        <option v-for="c in categories" :key="c.id" :value="c.id">
+                            {{ c.icon ? c.icon + ' ' : '' }}{{ c.name }}
+                        </option>
+                    </SelectInput>
+                    <InputError :message="form.errors.category_id" class="mt-2" />
+                </div>
+
+                <div class="mt-4">
+                    <InputLabel :value="t('expenses.account')" />
+                    <SelectInput v-model="form.account_id" class="mt-1 block w-full">
+                        <option v-for="a in accounts" :key="a.id" :value="a.id">{{ accountLabel(a) }}</option>
+                    </SelectInput>
+                    <InputError :message="form.errors.account_id" class="mt-2" />
+                </div>
+
+                <div class="mt-4 grid grid-cols-2 gap-4">
+                    <div>
+                        <InputLabel :value="t('expenses.amount')" />
+                        <TextInput v-model="form.amount" type="number" step="0.01" class="mt-1 block w-full" />
+                        <InputError :message="form.errors.amount" class="mt-2" />
+                    </div>
+                    <div>
+                        <InputLabel :value="t('expenses.date')" />
+                        <TextInput v-model="form.date" type="date" class="mt-1 block w-full" />
+                        <InputError :message="form.errors.date" class="mt-2" />
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <InputLabel :value="t('expenses.note')" />
+                    <TextInput v-model="form.note" class="mt-1 block w-full" />
+                    <InputError :message="form.errors.note" class="mt-2" />
+                </div>
+
+                <div class="mt-4">
+                    <InputLabel :value="t('expenses.location')" />
+                    <TextInput v-model="form.location" class="mt-1 block w-full" />
+                    <InputError :message="form.errors.location" class="mt-2" />
+                </div>
+
+                <div class="mt-6 flex justify-end gap-2">
+                    <SecondaryButton @click="showModal = false">{{ t('common.cancel') }}</SecondaryButton>
+                    <PrimaryButton :disabled="form.processing">{{ t('common.save') }}</PrimaryButton>
+                </div>
+            </form>
+        </Modal>
+
+        <!-- Category modal -->
+        <Modal :show="showCategoryModal" @close="showCategoryModal = false">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ t('expenses.categoriesTitle') }}</h2>
+
+                <ul class="mt-4 max-h-60 space-y-1 overflow-y-auto">
+                    <li v-for="c in categories" :key="c.id" class="text-sm text-gray-700 dark:text-gray-300">
+                        {{ c.icon ? c.icon + ' ' : '' }}{{ c.name }}
+                        <span v-if="!c.user_id" class="text-xs text-gray-400">{{ t('expenses.default') }}</span>
+                    </li>
+                </ul>
+
+                <form @submit.prevent="submitCategory" class="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+                    <InputLabel :value="t('expenses.addCustomCategory')" />
+                    <div class="mt-1 flex gap-2">
+                        <TextInput v-model="categoryForm.name" class="block w-full" :placeholder="t('expenses.namePlaceholder')" />
+                        <TextInput v-model="categoryForm.icon" class="block w-20" :placeholder="t('expenses.iconPlaceholder')" />
+                        <PrimaryButton :disabled="categoryForm.processing">{{ t('common.add') }}</PrimaryButton>
+                    </div>
+                    <InputError :message="categoryForm.errors.name" class="mt-2" />
+                </form>
+
+                <div class="mt-6 flex justify-end">
+                    <SecondaryButton @click="showCategoryModal = false">{{ t('common.close') }}</SecondaryButton>
+                </div>
+            </div>
+        </Modal>
+
+        <ConfirmDeleteModal
+            :show="!!confirmingDelete"
+            :title="t('expenses.deleteTitle')"
+            :message="t('expenses.deleteMessage')"
+            :processing="deleteForm.processing"
+            @confirm="confirmDelete"
+            @cancel="cancelDelete"
+        />
+    </AuthenticatedLayout>
+</template>
