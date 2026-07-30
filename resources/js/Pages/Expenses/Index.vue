@@ -4,6 +4,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Modal from '@/Components/Modal.vue';
 import ConfirmDeleteModal from '@/Components/ConfirmDeleteModal.vue';
 import ColorDot from '@/Components/ColorDot.vue';
+import MonthPicker from '@/Components/MonthPicker.vue';
+import DatePicker from '@/Components/DatePicker.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DangerButton from '@/Components/DangerButton.vue';
@@ -191,18 +193,17 @@ function accountLabel(account) {
                     </button>
                 </div>
 
-                <TextInput
+                <MonthPicker
                     v-if="filterMode === 'month'"
                     v-model="monthFilter"
-                    type="month"
                     @change="applyMonthFilter"
                 />
 
                 <template v-else>
                     <InputLabel :value="t('expenses.from')" class="sr-only" />
-                    <TextInput v-model="fromFilter" type="date" @change="applyRangeFilter" />
+                    <DatePicker v-model="fromFilter" @change="applyRangeFilter" />
                     <InputLabel :value="t('expenses.to')" class="sr-only" />
-                    <TextInput v-model="toFilter" type="date" @change="applyRangeFilter" />
+                    <DatePicker v-model="toFilter" @change="applyRangeFilter" />
                 </template>
             </div>
         </template>

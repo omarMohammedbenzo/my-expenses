@@ -14,7 +14,16 @@
         "date": "التاريخ",
         "name": "الاسم",
         "clickToUpload": "اضغط للرفع",
-        "orDragDrop": "أو اسحب وأفلت"
+        "orDragDrop": "أو اسحب وأفلت",
+        "selectMonth": "اختر الشهر",
+        "previousYear": "السنة السابقة",
+        "nextYear": "السنة التالية",
+        "clear": "مسح",
+        "thisMonth": "هذا الشهر",
+        "selectDate": "اختر التاريخ",
+        "previousMonth": "الشهر السابق",
+        "nextMonth": "الشهر التالي",
+        "today": "اليوم"
     },
     "toast": {
         "created": "تمت الإضافة بنجاح.",

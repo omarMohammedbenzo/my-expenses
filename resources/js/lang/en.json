@@ -14,7 +14,16 @@
         "date": "Date",
         "name": "Name",
         "clickToUpload": "Click to upload",
-        "orDragDrop": "or drag and drop"
+        "orDragDrop": "or drag and drop",
+        "selectMonth": "Select month",
+        "previousYear": "Previous year",
+        "nextYear": "Next year",
+        "clear": "Clear",
+        "thisMonth": "This month",
+        "selectDate": "Select date",
+        "previousMonth": "Previous month",
+        "nextMonth": "Next month",
+        "today": "Today"
     },
     "toast": {
         "created": "Added successfully.",

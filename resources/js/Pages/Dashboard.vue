@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ColorDot from '@/Components/ColorDot.vue';
-import TextInput from '@/Components/TextInput.vue';
+import MonthPicker from '@/Components/MonthPicker.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 
@@ -55,7 +55,7 @@ const chartOptions = computed(() => ({
                 <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     {{ t('dashboard.title') }}
                 </h2>
-                <TextInput v-model="monthValue" type="month" />
+                <MonthPicker v-model="monthValue" />
             </div>
         </template>
 
