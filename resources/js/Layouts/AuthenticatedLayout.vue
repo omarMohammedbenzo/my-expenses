@@ -40,12 +40,14 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink
                                     :href="route('dashboard')"
                                     :active="route().current('dashboard')"
+                                    class="mx-4"
                                 >
                                     {{ t('nav.dashboard') }}
                                 </NavLink>
                                 <NavLink
                                     :href="route('expenses.index')"
                                     :active="route().current('expenses.index')"
+                                    class="mx-3"
                                 >
                                     {{ t('nav.expenses') }}
                                 </NavLink>

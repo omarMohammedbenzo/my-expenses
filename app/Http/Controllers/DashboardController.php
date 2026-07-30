@@ -14,7 +14,7 @@ class DashboardController extends Controller
         $user = $request->user();
         $enabledCurrencies = $user->enabledCurrencies();
 
-        $month = $request->input('month', now()->format('Y-m'));
+        $month = $request->input('month') ?: now()->format('Y-m');
         $currency = $request->input('currency', $user->default_currency);
 
         if (! in_array($currency, $enabledCurrencies, true)) {
