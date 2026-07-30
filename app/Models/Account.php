@@ -37,6 +37,11 @@ class Account extends Model
         return $this->hasMany(Deposit::class);
     }
 
+    public function gifts(): HasMany
+    {
+        return $this->hasMany(Gift::class);
+    }
+
     public function displayName(): string
     {
         $label = $this->nickname ?: $this->institution->name;

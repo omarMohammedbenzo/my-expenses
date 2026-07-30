@@ -10,6 +10,7 @@ import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import SelectInput from '@/Components/SelectInput.vue';
+import ColorDot from '@/Components/ColorDot.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { useToast } from '@/composables/useToast';
@@ -19,8 +20,12 @@ const toast = useToast();
 
 const props = defineProps({
     gifts: Array,
-    enabledCurrencies: Array,
+    accounts: Array,
 });
+
+function accountLabel(account) {
+    return `${account.nickname || account.institution.name} (${account.currency})`;
+}
 
 const activeFilter = ref('all');
 const filteredGifts = computed(() => {
@@ -34,9 +39,9 @@ const editing = ref(null);
 const today = new Date().toISOString().slice(0, 10);
 
 const form = useForm({
+    account_id: props.accounts[0]?.id ?? null,
     type: 'received',
     amount: '',
-    currency: props.enabledCurrencies[0] ?? 'USD',
     source_name: '',
     date: today,
     note: '',
@@ -46,8 +51,8 @@ function openCreate() {
     editing.value = null;
     form.reset();
     form.clearErrors();
+    form.account_id = props.accounts[0]?.id ?? null;
     form.type = 'received';
-    form.currency = props.enabledCurrencies[0] ?? 'USD';
     form.date = today;
     showModal.value = true;
 }
@@ -55,9 +60,9 @@ function openCreate() {
 function openEdit(gift) {
     editing.value = gift;
     form.clearErrors();
+    form.account_id = gift.account_id;
     form.type = gift.type;
     form.amount = gift.amount;
-    form.currency = gift.currency;
     form.source_name = gift.source_name;
     form.date = gift.date;
     form.note = gift.note ?? '';
@@ -179,14 +184,16 @@ function confirmDelete() {
                                             ? 'text-vue-600 dark:text-vue-400'
                                             : 'text-red-600 dark:text-red-400'"
                                     >
-                                        {{ gift.type === 'received' ? '+' : '-' }}{{ gift.amount }} {{ gift.currency }}
+                                        {{ gift.type === 'received' ? '+' : '-' }}{{ gift.amount }} {{ gift.account?.currency }}
                                     </span>
                                     <span class="text-sm text-gray-500 dark:text-gray-400">
                                         &middot; {{ gift.source_name }}
                                     </span>
                                 </div>
-                                <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ gift.date }}<span v-if="gift.note"> &middot; {{ gift.note }}</span>
+                                <div class="mt-1 flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                    <ColorDot :color="gift.account?.institution?.color" />
+                                    {{ gift.account?.nickname || gift.account?.institution?.name }}
+                                    &middot; {{ gift.date }}<span v-if="gift.note"> &middot; {{ gift.note }}</span>
                                 </div>
                             </div>
                             <div class="flex gap-2">
@@ -241,19 +248,18 @@ function confirmDelete() {
                     <InputError :message="form.errors.source_name" class="mt-2" />
                 </div>
 
-                <div class="mt-4 grid grid-cols-2 gap-4">
-                    <div>
-                        <InputLabel :value="t('gifts.amount')" />
-                        <TextInput v-model="form.amount" type="number" step="0.01" class="mt-1 block w-full" />
-                        <InputError :message="form.errors.amount" class="mt-2" />
-                    </div>
-                    <div>
-                        <InputLabel :value="t('gifts.currency')" />
-                        <SelectInput v-model="form.currency" class="mt-1 block w-full">
-                            <option v-for="c in enabledCurrencies" :key="c" :value="c">{{ c }}</option>
-                        </SelectInput>
-                        <InputError :message="form.errors.currency" class="mt-2" />
-                    </div>
+                <div class="mt-4">
+                    <InputLabel :value="t('gifts.account')" />
+                    <SelectInput v-model="form.account_id" class="mt-1 block w-full">
+                        <option v-for="a in accounts" :key="a.id" :value="a.id">{{ accountLabel(a) }}</option>
+                    </SelectInput>
+                    <InputError :message="form.errors.account_id" class="mt-2" />
+                </div>
+
+                <div class="mt-4">
+                    <InputLabel :value="t('gifts.amount')" />
+                    <TextInput v-model="form.amount" type="number" step="0.01" class="mt-1 block w-full" />
+                    <InputError :message="form.errors.amount" class="mt-2" />
                 </div>
 
                 <div class="mt-4">

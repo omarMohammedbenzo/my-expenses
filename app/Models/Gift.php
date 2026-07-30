@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Gift extends Model
 {
-    protected $fillable = ['user_id', 'type', 'amount', 'currency', 'source_name', 'date', 'note'];
+    protected $fillable = ['user_id', 'account_id', 'type', 'amount', 'source_name', 'date', 'note'];
 
     protected function casts(): array
     {
@@ -20,5 +20,10 @@ class Gift extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
     }
 }

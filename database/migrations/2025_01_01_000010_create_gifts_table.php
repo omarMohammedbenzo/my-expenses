@@ -11,9 +11,9 @@ return new class extends Migration
         Schema::create('gifts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('account_id')->constrained()->cascadeOnDelete();
             $table->enum('type', ['received', 'given'])->default('received');
             $table->decimal('amount', 15, 2);
-            $table->string('currency', 3);
             $table->string('source_name');
             $table->date('date');
             $table->string('note')->nullable();

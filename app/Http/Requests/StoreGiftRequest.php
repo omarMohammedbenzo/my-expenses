@@ -16,9 +16,12 @@ class StoreGiftRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'account_id' => [
+                'required',
+                Rule::exists('accounts', 'id')->where('user_id', $this->user()->id),
+            ],
             'type' => 'required|in:received,given',
             'amount' => 'required|numeric|min:0.01',
-            'currency' => ['required', 'string', Rule::in($this->user()->enabledCurrencies())],
             'source_name' => 'required|string|max:255',
             'date' => 'required|date',
             'note' => 'nullable|string|max:255',
