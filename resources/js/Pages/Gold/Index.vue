@@ -258,38 +258,52 @@ function confirmDelete() {
                         <div
                             v-for="holding in holdings"
                             :key="holding.id"
-                            class="flex items-center justify-between p-4"
+                            class="flex items-start justify-between gap-4 p-4"
                         >
-                            <div>
-                                <div class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    {{ holding.grams }}g &middot; {{ holding.karat }}K
-                                </div>
-                                <div v-if="holding.note" class="text-sm text-gray-500 dark:text-gray-400">
-                                    {{ holding.note }}
-                                </div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">
-                                    <template v-if="holdingValueUsd(holding) !== null">
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                                    <span class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                        <template v-if="holdingValueEgp(holding) !== null">{{ formatMoney(holdingValueEgp(holding), 'EGP') }}</template>
+                                        <template v-else-if="holdingValueUsd(holding) !== null">{{ formatMoney(holdingValueUsd(holding), 'USD') }}</template>
+                                        <template v-else>{{ t('gold.priceUnavailable') }}</template>
+                                    </span>
+                                    <span v-if="holdingValueEgp(holding) !== null && holdingValueUsd(holding) !== null" class="text-sm text-gray-500 dark:text-gray-400">
                                         {{ formatMoney(holdingValueUsd(holding), 'USD') }}
-                                        <span v-if="holdingValueEgp(holding) !== null">
-                                            &middot; {{ formatMoney(holdingValueEgp(holding), 'EGP') }}
-                                        </span>
-                                    </template>
-                                    <template v-else>{{ t('gold.priceUnavailable') }}</template>
-                                </div>
-                                <div v-if="holdingManufacturingCost(holding) > 0" class="text-xs text-gray-400 dark:text-gray-500">
-                                    {{ t('gold.includesManufacturing', { amount: formatMoney(holdingManufacturingCost(holding), 'EGP') }) }}
-                                </div>
-                                <div v-if="holdingNetProfitEgp(holding) !== null" class="text-xs">
-                                    {{ t('gold.purchasedFor', { amount: formatMoney(holdingPurchasePrice(holding), 'EGP') }) }}
-                                    &middot;
-                                    <span
-                                        :class="holdingNetProfitEgp(holding) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
-                                    >
-                                        {{ holdingNetProfitEgp(holding) >= 0 ? '+' : '' }}{{ formatMoney(holdingNetProfitEgp(holding), 'EGP') }}
                                     </span>
                                 </div>
+
+                                <div class="mt-1.5 flex flex-wrap items-center gap-2">
+                                    <span class="rounded-full bg-gray-100 px-3 py-1 text-base font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                                        {{ holding.grams }}g &middot; {{ holding.karat }}K
+                                    </span>
+                                    <span v-if="holdingManufacturingCost(holding) > 0" class="text-xs text-gray-400 dark:text-gray-500">
+                                        {{ t('gold.includesManufacturing', { amount: formatMoney(holdingManufacturingCost(holding), 'EGP') }) }}
+                                    </span>
+                                </div>
+
+                                <div v-if="holding.note" class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ holding.note }}
+                                </div>
+
+                                <div v-if="holdingPurchasePrice(holding) !== null" class="mt-3 flex flex-wrap gap-x-6 gap-y-2">
+                                    <div>
+                                        <div class="text-xs text-gray-400 dark:text-gray-500">{{ t('gold.boughtFor') }}</div>
+                                        <div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            {{ formatMoney(holdingPurchasePrice(holding), 'EGP') }}
+                                        </div>
+                                    </div>
+                                    <div v-if="holdingNetProfitEgp(holding) !== null">
+                                        <div class="text-xs text-gray-400 dark:text-gray-500">{{ t('gold.netProfit') }}</div>
+                                        <div
+                                            class="text-sm font-semibold"
+                                            :class="holdingNetProfitEgp(holding) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+                                        >
+                                            {{ holdingNetProfitEgp(holding) >= 0 ? '+' : '' }}{{ formatMoney(holdingNetProfitEgp(holding), 'EGP') }}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="flex gap-2">
+                            <div class="flex shrink-0 gap-2">
                                 <SecondaryButton @click="openEdit(holding)">{{ t('common.edit') }}</SecondaryButton>
                                 <DangerButton @click="askDelete(holding)">{{ t('common.delete') }}</DangerButton>
                             </div>
