@@ -1,0 +1,342 @@
+{
+    "common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "delete": "Delete",
+        "add": "Add",
+        "close": "Close",
+        "confirm": "Confirm",
+        "undo": "Undo",
+        "note": "Note",
+        "amount": "Amount",
+        "currency": "Currency",
+        "date": "Date",
+        "name": "Name",
+        "clickToUpload": "Click to upload",
+        "orDragDrop": "or drag and drop"
+    },
+    "toast": {
+        "created": "Added successfully.",
+        "updated": "Updated successfully.",
+        "deleted": "Deleted successfully.",
+        "confirmed": "Income confirmed.",
+        "error": "Something went wrong. Please try again."
+    },
+    "appearance": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+    },
+    "language": {
+        "english": "English",
+        "arabic": "Arabic"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "expenses": "Expenses",
+        "accounts": "Accounts",
+        "income": "Income",
+        "gold": "Gold",
+        "gifts": "Gifts",
+        "profile": "Profile",
+        "currencySettings": "Currency Settings",
+        "logOut": "Log Out"
+    },
+    "auth": {
+        "login": {
+            "title": "Welcome back",
+            "subtitle": "Log in to keep tracking your money.",
+            "email": "Email",
+            "password": "Password",
+            "rememberMe": "Remember me",
+            "forgotPassword": "Forgot password?",
+            "submit": "Log in",
+            "noAccount": "Don't have an account?",
+            "signUp": "Sign up"
+        },
+        "register": {
+            "title": "Create your account",
+            "subtitle": "Start tracking your income, expenses, and gold today.",
+            "name": "Name",
+            "email": "Email",
+            "password": "Password",
+            "confirmPassword": "Confirm Password",
+            "submit": "Create account",
+            "haveAccount": "Already have an account?",
+            "logIn": "Log in"
+        },
+        "forgotPassword": {
+            "description": "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.",
+            "submit": "Email Password Reset Link"
+        },
+        "resetPassword": {
+            "submit": "Reset Password"
+        },
+        "confirmPassword": {
+            "description": "This is a secure area of the application. Please confirm your password before continuing.",
+            "submit": "Confirm"
+        },
+        "verifyEmail": {
+            "description": "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.",
+            "sent": "A new verification link has been sent to the email address you provided during registration.",
+            "resend": "Resend Verification Email",
+            "logOut": "Log Out"
+        }
+    },
+    "profile": {
+        "title": "Profile",
+        "information": {
+            "title": "Profile Information",
+            "description": "Update your account's profile information and email address.",
+            "avatar": "Photo",
+            "name": "Name",
+            "email": "Email",
+            "unverified": "Your email address is unverified.",
+            "resend": "Click here to re-send the verification email.",
+            "sent": "A new verification link has been sent to your email address.",
+            "saved": "Saved."
+        },
+        "password": {
+            "title": "Update Password",
+            "description": "Ensure your account is using a long, random password to stay secure.",
+            "current": "Current Password",
+            "new": "New Password",
+            "confirm": "Confirm Password",
+            "saved": "Saved."
+        },
+        "deleteAccount": {
+            "title": "Delete Account",
+            "description": "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.",
+            "button": "Delete Account",
+            "confirmTitle": "Are you sure you want to delete your account?",
+            "confirmDescription": "Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.",
+            "passwordPlaceholder": "Password"
+        }
+    },
+    "welcome": {
+        "nav": {
+            "login": "Log in",
+            "getStarted": "Get started"
+        },
+        "hero": {
+            "title1": "Know exactly where your money goes",
+            "title2": "— in every currency.",
+            "subtitle": "A personal finance tracker for income, expenses, gold, and gifts — with USD, JOD, and EGP always kept separate, never converted.",
+            "createAccount": "Create your account",
+            "goToDashboard": "Go to dashboard",
+            "logIn": "Log in"
+        },
+        "features": {
+            "multiCurrency": {
+                "title": "Multi-currency accounts",
+                "description": "Track USD, JOD, and EGP separately across as many banks, wallets, and cash pockets as you need. Nothing is ever converted or combined."
+            },
+            "expenses": {
+                "title": "Expenses by category & account",
+                "description": "Log spending against the account it came from, with default and custom categories, so you always know what it was for and where it went."
+            },
+            "income": {
+                "title": "Income you confirm",
+                "description": "Recurring income is only counted once you confirm it arrived, so your balances always reflect reality — not just a schedule."
+            },
+            "goldGifts": {
+                "title": "Gold & gifts",
+                "description": "Keep tabs on gold holdings by karat, and one-off gifts you've given or received, alongside your everyday accounts."
+            },
+            "stats": {
+                "title": "Monthly statistics",
+                "description": "See spending by category and balance distribution by institution, broken out per currency with clear, simple charts."
+            },
+            "private": {
+                "title": "Private by default",
+                "description": "Every account is fully isolated. Your data is yours alone, even when friends join and create their own accounts."
+            }
+        },
+        "footer": "© {year} Expense Tracker"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "totalSpent": "Total spent this month",
+        "topCategory": "Top category",
+        "currentBalance": "Current balance ({currency})",
+        "spendingByCategory": "Spending by Category",
+        "noExpenses": "No expenses recorded for this month yet.",
+        "balanceDistribution": "{currency} — Balance Distribution",
+        "noAccountsInCurrency": "No accounts in {currency} yet.",
+        "total": "Total",
+        "pendingReminder": "Your {name} was expected on {date} — not yet confirmed.",
+        "confirmNow": "Confirm now"
+    },
+    "accounts": {
+        "title": "Institutions & Accounts",
+        "addInstitution": "Add Institution",
+        "addAccount": "Add Account",
+        "editInstitution": "Edit Institution",
+        "newInstitution": "Add Institution",
+        "editAccount": "Edit Account",
+        "newAccount": "Add Account",
+        "noAccountsYet": "No accounts yet.",
+        "noInstitutions": "No institutions yet. Add one to get started.",
+        "balance": "Balance",
+        "name": "Name",
+        "namePlaceholder": "e.g. CIB Egypt",
+        "type": "Type",
+        "types": {
+            "bank": "Bank",
+            "cash": "Cash",
+            "wallet": "Wallet"
+        },
+        "color": "Color",
+        "logo": "Logo (optional photo)",
+        "removeLogo": "Remove photo",
+        "currency": "Currency",
+        "startingBalance": "Starting Balance",
+        "nickname": "Nickname (optional)",
+        "nicknamePlaceholder": "e.g. Visa",
+        "deleteInstitutionTitle": "Delete “{name}”?",
+        "deleteInstitutionMessage": "This will also delete all of its accounts and their expense history. This action cannot be undone.",
+        "deleteAccountTitle": "Delete this account?",
+        "deleteAccountMessage": "This will also delete its expense history. This action cannot be undone.",
+        "viewHistory": "History"
+    },
+    "ledger": {
+        "title": "Transaction History",
+        "back": "Back to Accounts",
+        "currentBalance": "Current Balance",
+        "addMoney": "Add Money",
+        "newDeposit": "Add Money",
+        "editDeposit": "Edit Deposit",
+        "source": "Source (optional)",
+        "sourcePlaceholder": "e.g. Cash deposit, transfer from a friend",
+        "note": "Note (optional)",
+        "date": "Date",
+        "amount": "Amount",
+        "table": {
+            "date": "Date",
+            "type": "Type",
+            "description": "Description",
+            "amount": "Amount"
+        },
+        "type": {
+            "deposit": "Deposit",
+            "expense": "Expense",
+            "income": "Income"
+        },
+        "noTransactions": "No transactions for this account yet.",
+        "deleteTitle": "Delete this deposit?",
+        "deleteMessage": "This will remove the deposit and subtract the amount from this account's balance."
+    },
+    "expenses": {
+        "title": "Expenses",
+        "manageCategories": "Manage Categories",
+        "addExpense": "Add Expense",
+        "editExpense": "Edit Expense",
+        "table": {
+            "row": "#",
+            "date": "Date",
+            "category": "Category",
+            "account": "Account",
+            "note": "Note",
+            "amount": "Amount"
+        },
+        "noExpensesMonth": "No expenses for this filter.",
+        "total": "Total",
+        "filterByMonth": "By month",
+        "filterByRange": "By date range",
+        "from": "From",
+        "to": "To",
+        "category": "Category",
+        "account": "Account (which pocket of money)",
+        "amount": "Amount",
+        "date": "Date",
+        "note": "Note",
+        "location": "Location (optional)",
+        "categoriesTitle": "Categories",
+        "default": "(default)",
+        "addCustomCategory": "Add Custom Category",
+        "namePlaceholder": "Name",
+        "iconPlaceholder": "Icon",
+        "deleteTitle": "Delete this expense?",
+        "deleteMessage": "This will remove the expense and restore the amount to its account balance."
+    },
+    "income": {
+        "title": "Income",
+        "addSource": "Add Income Source",
+        "alreadyConfirmed": "This income has already been confirmed for this period.",
+        "pendingConfirmations": "Pending Confirmations",
+        "expectedOn": "Expected on {date}",
+        "confirmReceived": "Confirm Received",
+        "confirmThisMonth": "Confirm This Month",
+        "incomeSources": "Income Sources",
+        "noSources": "No income sources yet.",
+        "dayOfMonth": "Day {day} of month",
+        "weeklyOnDay": "Weekly on day {day}",
+        "recentlyConfirmed": "Recently Confirmed",
+        "confirmedOn": "Confirmed {date}",
+        "noConfirmed": "No confirmed income yet.",
+        "undoConfirmation": "Undo",
+        "undoTitle": "Undo this confirmation?",
+        "undoMessage": "This will move it back to pending and remove the amount from the account balance.",
+        "editSource": "Edit Income Source",
+        "newSource": "Add Income Source",
+        "name": "Name",
+        "namePlaceholder": "e.g. Salary",
+        "amount": "Amount",
+        "currency": "Currency",
+        "frequency": "Frequency",
+        "frequencyMonthly": "Monthly",
+        "frequencyWeekly": "Weekly",
+        "dayOfMonthLabel": "Day of Month",
+        "dayOfWeekLabel": "Day of Week (0=Sun)",
+        "defaultAccount": "Default Account (optional)",
+        "chooseAtConfirmation": "— Choose at confirmation —",
+        "confirmModalTitle": "Confirm Income Received",
+        "actualDate": "Actual Date Received",
+        "depositTo": "Deposit To Account",
+        "deleteSourceTitle": "Delete income source “{name}”?",
+        "deleteSourceMessage": "This will also delete its pending and confirmed income transactions. This action cannot be undone."
+    },
+    "gold": {
+        "title": "Gold Holdings",
+        "addGold": "Add Gold",
+        "editGold": "Edit Gold Holding",
+        "newGold": "Add Gold Holding",
+        "noHoldings": "No gold holdings recorded yet.",
+        "grams": "Grams",
+        "karat": "Karat",
+        "note": "Note",
+        "deleteTitle": "Delete this gold holding?",
+        "deleteMessage": "This will permanently remove this gold holding. This action cannot be undone.",
+        "totalValue": "Total Estimated Value",
+        "pricePerGram24k": "Price per gram (24K)",
+        "priceUnavailable": "Price unavailable",
+        "liveMarketValue": "Reflects the current live market price"
+    },
+    "gifts": {
+        "title": "Gifts & Windfalls",
+        "addGift": "Add Gift",
+        "editGift": "Edit Gift",
+        "newGift": "Add Gift",
+        "noGifts": "No gifts recorded yet.",
+        "type": "Type",
+        "typeReceived": "I Received",
+        "typeGiven": "I Gave",
+        "filterAll": "All",
+        "source": "Source",
+        "sourceFrom": "From",
+        "sourceTo": "To",
+        "sourcePlaceholder": "e.g. Uncle Ahmad",
+        "amount": "Amount",
+        "currency": "Currency",
+        "date": "Date",
+        "note": "Note",
+        "deleteTitle": "Delete this gift?",
+        "deleteMessage": "This will permanently remove this gift entry. This action cannot be undone."
+    },
+    "currencySettings": {
+        "title": "Currency Settings",
+        "description": "Choose which currencies you want to use. Amounts are never converted between currencies — each is tracked and displayed separately.",
+        "defaultCurrency": "Default Currency"
+    }
+}
