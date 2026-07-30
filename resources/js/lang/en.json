@@ -221,7 +221,8 @@
         "type": {
             "deposit": "Deposit",
             "expense": "Expense",
-            "income": "Income"
+            "income": "Income",
+            "gift": "Gift"
         },
         "noTransactions": "No transactions for this account yet.",
         "deleteTitle": "Delete this deposit?",
@@ -316,7 +317,7 @@
         "includesManufacturing": "Includes {amount} manufacturing cost",
         "purchasePrice": "Purchase Price (EGP, total)",
         "purchasePricePlaceholder": "e.g. what you paid for this piece",
-        "purchasedFor": "Bought for {amount}",
+        "boughtFor": "Bought for",
         "totalInvested": "Total Invested",
         "netProfit": "Net Profit"
     },

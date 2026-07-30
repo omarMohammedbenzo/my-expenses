@@ -39,6 +39,17 @@ class AccountLedgerController extends Controller
             'created_at' => $expense->created_at,
         ]);
 
+        $gifts = $account->gifts()->get()->map(fn ($gift) => [
+            'id' => 'gift-'.$gift->id,
+            'type' => 'gift',
+            'direction' => $gift->type === 'received' ? 'in' : 'out',
+            'date' => $gift->date->format('Y-m-d'),
+            'amount' => $gift->amount,
+            'label' => $gift->source_name,
+            'note' => $gift->note,
+            'created_at' => $gift->created_at,
+        ]);
+
         $confirmedIncome = IncomeTransaction::query()
             ->where('account_id', $account->id)
             ->where('status', 'confirmed')
@@ -57,6 +68,7 @@ class AccountLedgerController extends Controller
 
         $transactions = $deposits
             ->concat($expenses)
+            ->concat($gifts)
             ->concat($confirmedIncome)
             ->sortByDesc(fn ($row) => $row['date'].' '.$row['created_at'])
             ->values();
