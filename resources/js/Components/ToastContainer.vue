@@ -5,11 +5,7 @@ import { useToast } from '@/composables/useToast';
 const { toasts, dismiss } = useToast();
 const container = ref(null);
 
-// The toast container is a native popover so it lives in the same browser
-// "top layer" as our <dialog>-based Modal. Top-layer elements always paint
-// above normally z-indexed content, but stack among themselves in the order
-// they were shown — so every time a new toast arrives we re-show the
-// popover, bumping it above any dialog that may have opened since.
+
 watch(
     () => toasts.length,
     async (count) => {
@@ -33,7 +29,7 @@ watch(
         <div
             ref="container"
             popover="manual"
-            class="pointer-events-none fixed inset-x-4 top-4 z-[100] m-0 flex flex-col items-center gap-2 border-0 bg-transparent p-0 sm:inset-x-auto sm:end-4 sm:items-end"
+            class="pointer-events-none fixed inset-x-4 top-2 bottom-auto z-[100] m-0 flex flex-col items-center gap-2 border-0 bg-transparent p-0 sm:inset-x-auto sm:right-4 sm:items-end"
         >
             <TransitionGroup
                 enter-active-class="transition duration-200 ease-out"
@@ -46,13 +42,11 @@ watch(
                 <div
                     v-for="toast in toasts"
                     :key="toast.id"
-                    class="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg bg-white p-4 shadow-lg ring-1 ring-gray-900/5 dark:bg-gray-800 dark:ring-white/10"
+                    class="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg bg-white p-4 shadow-lg ring-1 ring-gray-900/5"
                 >
                     <span
                         class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
-                        :class="toast.type === 'success'
-                            ? 'bg-vue-100 text-vue-600 dark:bg-vue-950/60 dark:text-vue-400'
-                            : 'bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400'"
+                        :class="toast.type === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
                     >
                         <svg v-if="toast.type === 'success'" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -61,11 +55,11 @@ watch(
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </span>
-                    <p class="flex-1 text-sm text-gray-700 dark:text-gray-200">{{ toast.message }}</p>
+                    <p class="flex-1 text-sm text-gray-700">{{ toast.message }}</p>
                     <button
                         type="button"
                         @click="dismiss(toast.id)"
-                        class="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                        class="shrink-0 text-gray-400 hover:text-gray-600"
                     >
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
