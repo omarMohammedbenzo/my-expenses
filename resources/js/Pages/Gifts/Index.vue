@@ -193,6 +193,7 @@ function confirmDelete() {
                                 <div class="mt-1 flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                                     <ColorDot :color="gift.account?.institution?.color" />
                                     {{ gift.account?.nickname || gift.account?.institution?.name }}
+                                    <span v-if="gift.account?.currency" class="text-gray-400 dark:text-gray-500">({{ gift.account.currency }})</span>
                                     &middot; {{ gift.date }}<span v-if="gift.note"> &middot; {{ gift.note }}</span>
                                 </div>
                             </div>
