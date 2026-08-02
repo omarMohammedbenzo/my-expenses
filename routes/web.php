@@ -13,6 +13,7 @@ use App\Http\Controllers\IncomeSourceController;
 use App\Http\Controllers\IncomeTransactionController;
 use App\Http\Controllers\InstitutionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TransferController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -49,6 +50,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/deposits', [DepositController::class, 'store'])->name('deposits.store');
     Route::put('/deposits/{deposit}', [DepositController::class, 'update'])->name('deposits.update');
     Route::delete('/deposits/{deposit}', [DepositController::class, 'destroy'])->name('deposits.destroy');
+
+    Route::get('/transfers', [TransferController::class, 'index'])->name('transfers.index');
+    Route::post('/transfers', [TransferController::class, 'store'])->name('transfers.store');
+    Route::put('/transfers/{transfer}', [TransferController::class, 'update'])->name('transfers.update');
+    Route::delete('/transfers/{transfer}', [TransferController::class, 'destroy'])->name('transfers.destroy');
 
     Route::get('/expenses', [ExpenseController::class, 'index'])->name('expenses.index');
     Route::post('/expenses', [ExpenseController::class, 'store'])->name('expenses.store');

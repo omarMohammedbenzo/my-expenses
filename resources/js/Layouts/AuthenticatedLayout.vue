@@ -75,6 +75,12 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     {{ t('nav.gifts') }}
                                 </NavLink>
+                                <NavLink
+                                    :href="route('transfers.index')"
+                                    :active="route().current('transfers.index')"
+                                >
+                                    {{ t('nav.transfers') }}
+                                </NavLink>
                             </div>
                         </div>
 
@@ -225,6 +231,12 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('gifts.index')"
                         >
                             {{ t('nav.gifts') }}
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('transfers.index')"
+                            :active="route().current('transfers.index')"
+                        >
+                            {{ t('nav.transfers') }}
                         </ResponsiveNavLink>
                     </div>
 

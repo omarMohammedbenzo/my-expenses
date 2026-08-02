@@ -48,6 +48,7 @@
         "income": "Income",
         "gold": "Gold",
         "gifts": "Gifts",
+        "transfers": "Transfers",
         "profile": "Profile",
         "currencySettings": "Currency Settings",
         "logOut": "Log Out"
@@ -231,7 +232,8 @@
             "deposit": "Deposit",
             "expense": "Expense",
             "income": "Income",
-            "gift": "Gift"
+            "gift": "Gift",
+            "transfer": "Transfer"
         },
         "noTransactions": "No transactions for this account yet.",
         "total": "Total",
@@ -351,6 +353,24 @@
         "note": "Note",
         "deleteTitle": "Delete this gift?",
         "deleteMessage": "This will permanently remove this gift entry. This action cannot be undone."
+    },
+    "transfers": {
+        "title": "Transfers Between My Accounts",
+        "addTransfer": "Add Transfer",
+        "editTransfer": "Edit Transfer",
+        "newTransfer": "Add Transfer",
+        "noTransfers": "No transfers recorded yet.",
+        "needTwoAccounts": "You need at least two accounts to record a transfer.",
+        "fromAccount": "From Account",
+        "toAccount": "To Account",
+        "sentAmount": "Amount Sent",
+        "receivedAmount": "Amount Received",
+        "receivedAmountHint": "Enter the amount that actually landed in the destination account — useful when the two accounts use different currencies.",
+        "insufficientBalance": "The selected account does not have enough balance for this transfer.",
+        "date": "Date",
+        "note": "Note",
+        "deleteTitle": "Delete this transfer?",
+        "deleteMessage": "This will reverse the transfer and restore both accounts' balances. This action cannot be undone."
     },
     "currencySettings": {
         "title": "Currency Settings",

@@ -52,6 +52,28 @@ class AccountLedgerController extends Controller
             'created_at' => $gift->created_at,
         ]);
 
+        $transfersOut = $account->transfersOut()->with('toAccount.institution')->get()->map(fn ($transfer) => [
+            'id' => 'transfer-out-'.$transfer->id,
+            'type' => 'transfer',
+            'direction' => 'out',
+            'date' => $transfer->date->format('Y-m-d'),
+            'amount' => $transfer->sent_amount,
+            'label' => $transfer->toAccount->displayName(),
+            'note' => $transfer->note,
+            'created_at' => $transfer->created_at,
+        ]);
+
+        $transfersIn = $account->transfersIn()->with('fromAccount.institution')->get()->map(fn ($transfer) => [
+            'id' => 'transfer-in-'.$transfer->id,
+            'type' => 'transfer',
+            'direction' => 'in',
+            'date' => $transfer->date->format('Y-m-d'),
+            'amount' => $transfer->received_amount,
+            'label' => $transfer->fromAccount->displayName(),
+            'note' => $transfer->note,
+            'created_at' => $transfer->created_at,
+        ]);
+
         $confirmedIncome = IncomeTransaction::query()
             ->where('account_id', $account->id)
             ->where('status', 'confirmed')
@@ -71,6 +93,8 @@ class AccountLedgerController extends Controller
         $transactions = $deposits
             ->concat($expenses)
             ->concat($gifts)
+            ->concat($transfersOut)
+            ->concat($transfersIn)
             ->concat($confirmedIncome)
             ->when($month, fn ($rows) => $rows->filter(fn ($row) => str_starts_with($row['date'], $month)))
             ->sortByDesc(fn ($row) => $row['date'].' '.$row['created_at'])

@@ -90,6 +90,11 @@ class User extends Authenticatable
         return $this->hasMany(Deposit::class);
     }
 
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(Transfer::class);
+    }
+
     public function enabledCurrencies(): array
     {
         return $this->currencies()->where('is_enabled', true)->pluck('currency')->all();

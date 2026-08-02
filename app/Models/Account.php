@@ -42,6 +42,16 @@ class Account extends Model
         return $this->hasMany(Gift::class);
     }
 
+    public function transfersOut(): HasMany
+    {
+        return $this->hasMany(Transfer::class, 'from_account_id');
+    }
+
+    public function transfersIn(): HasMany
+    {
+        return $this->hasMany(Transfer::class, 'to_account_id');
+    }
+
     public function displayName(): string
     {
         $label = $this->nickname ?: $this->institution->name;
