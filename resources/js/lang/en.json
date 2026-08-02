@@ -234,6 +234,7 @@
             "gift": "Gift"
         },
         "noTransactions": "No transactions for this account yet.",
+        "total": "Total",
         "deleteTitle": "Delete this deposit?",
         "deleteMessage": "This will remove the deposit and subtract the amount from this account's balance."
     },

@@ -16,6 +16,8 @@ class AccountLedgerController extends Controller
 
         $account->load('institution');
 
+        $month = $request->input('month');
+
         $deposits = $account->deposits()->get()->map(fn ($deposit) => [
             'id' => 'deposit-'.$deposit->id,
             'raw_id' => $deposit->id,
@@ -70,12 +72,17 @@ class AccountLedgerController extends Controller
             ->concat($expenses)
             ->concat($gifts)
             ->concat($confirmedIncome)
+            ->when($month, fn ($rows) => $rows->filter(fn ($row) => str_starts_with($row['date'], $month)))
             ->sortByDesc(fn ($row) => $row['date'].' '.$row['created_at'])
             ->values();
+
+        $total = $transactions->sum(fn ($row) => $row['direction'] === 'in' ? $row['amount'] : -$row['amount']);
 
         return Inertia::render('Accounts/Ledger', [
             'account' => $account,
             'transactions' => $transactions,
+            'month' => $month,
+            'total' => $total,
         ]);
     }
 }

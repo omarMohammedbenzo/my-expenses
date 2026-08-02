@@ -4,13 +4,14 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Modal from '@/Components/Modal.vue';
 import ConfirmDeleteModal from '@/Components/ConfirmDeleteModal.vue';
 import ColorDot from '@/Components/ColorDot.vue';
+import MonthPicker from '@/Components/MonthPicker.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { useToast } from '@/composables/useToast';
 
@@ -20,11 +21,19 @@ const toast = useToast();
 const props = defineProps({
     account: Object,
     transactions: Array,
+    month: String,
+    total: [Number, String],
 });
 
 const accountLabel = props.account.nickname || props.account.institution.name;
 
 const today = new Date().toISOString().slice(0, 10);
+
+const monthFilter = ref(props.month ?? '');
+
+function applyMonthFilter() {
+    router.get(route('accounts.ledger', props.account.id), { month: monthFilter.value || undefined }, { preserveState: true });
+}
 
 const showModal = ref(false);
 const editing = ref(null);
@@ -114,7 +123,10 @@ function confirmDelete() {
                         {{ accountLabel }} ({{ account.currency }})
                     </h2>
                 </div>
-                <PrimaryButton @click="openCreate">{{ t('ledger.addMoney') }}</PrimaryButton>
+                <div class="flex items-center gap-2">
+                    <MonthPicker v-model="monthFilter" @change="applyMonthFilter" />
+                    <PrimaryButton @click="openCreate">{{ t('ledger.addMoney') }}</PrimaryButton>
+                </div>
             </div>
         </template>
 
@@ -175,6 +187,20 @@ function confirmDelete() {
                                 </td>
                             </tr>
                         </tbody>
+                        <tfoot v-if="transactions.length > 0" class="border-t-2 border-gray-200 dark:border-gray-600">
+                            <tr>
+                                <td colspan="3" class="px-4 py-2 text-end text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    {{ t('ledger.total') }}
+                                </td>
+                                <td
+                                    class="px-4 py-2 text-end text-sm font-bold"
+                                    :class="total >= 0 ? 'text-vue-600 dark:text-vue-400' : 'text-red-600 dark:text-red-400'"
+                                >
+                                    {{ total >= 0 ? '+' : '' }}{{ total }} {{ account.currency }}
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
