@@ -23,7 +23,8 @@
         "selectDate": "اختر التاريخ",
         "previousMonth": "الشهر السابق",
         "nextMonth": "الشهر التالي",
-        "today": "اليوم"
+        "today": "اليوم",
+        "all": "الكل"
     },
     "toast": {
         "created": "تمت الإضافة بنجاح.",

@@ -25,6 +25,8 @@ const props = defineProps({
     categories: Array,
     accounts: Array,
     totals: Array,
+    currency: String,
+    enabledCurrencies: Array,
     month: String,
     from: String,
     to: String,
@@ -38,18 +40,36 @@ const monthFilter = ref(props.month ?? today.slice(0, 7));
 const fromFilter = ref(props.from ?? '');
 const toFilter = ref(props.to ?? '');
 
+// A null currency means "all currencies".
+const currencyFilter = ref(props.currency ?? null);
+
+function dateParams() {
+    return filterMode.value === 'range'
+        ? { from: fromFilter.value || undefined, to: toFilter.value || undefined }
+        : { month: monthFilter.value };
+}
+
+function reload() {
+    router.get(
+        route('expenses.index'),
+        { ...dateParams(), currency: currencyFilter.value || undefined },
+        { preserveState: true },
+    );
+}
+
 function applyMonthFilter() {
     filterMode.value = 'month';
-    router.get(route('expenses.index'), { month: monthFilter.value }, { preserveState: true });
+    reload();
 }
 
 function applyRangeFilter() {
     filterMode.value = 'range';
-    router.get(
-        route('expenses.index'),
-        { from: fromFilter.value || undefined, to: toFilter.value || undefined },
-        { preserveState: true },
-    );
+    reload();
+}
+
+function applyCurrencyFilter(value) {
+    currencyFilter.value = value;
+    reload();
 }
 
 function switchFilterMode(mode) {
@@ -205,6 +225,31 @@ function accountLabel(account) {
                     <InputLabel :value="t('expenses.to')" class="sr-only" />
                     <DatePicker v-model="toFilter" @change="applyRangeFilter" />
                 </template>
+
+                <div v-if="enabledCurrencies.length > 1" class="flex gap-2 ms-auto">
+                    <button
+                        type="button"
+                        @click="applyCurrencyFilter(null)"
+                        class="rounded-md px-3 py-1.5 text-sm font-medium"
+                        :class="!currency
+                            ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-800'
+                            : 'bg-white text-gray-700 shadow-sm dark:bg-gray-800 dark:text-gray-300'"
+                    >
+                        {{ t('common.all') }}
+                    </button>
+                    <button
+                        v-for="c in enabledCurrencies"
+                        :key="c"
+                        type="button"
+                        @click="applyCurrencyFilter(c)"
+                        class="rounded-md px-3 py-1.5 text-sm font-medium"
+                        :class="c === currency
+                            ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-800'
+                            : 'bg-white text-gray-700 shadow-sm dark:bg-gray-800 dark:text-gray-300'"
+                    >
+                        {{ c }}
+                    </button>
+                </div>
             </div>
         </template>
 

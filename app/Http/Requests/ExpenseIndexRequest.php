@@ -15,6 +15,7 @@ class ExpenseIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'currency' => 'nullable|string|size:3',
             'month' => 'nullable|date_format:Y-m',
             'from' => 'nullable|date',
             'to' => 'nullable|date',

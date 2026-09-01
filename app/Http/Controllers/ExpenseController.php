@@ -25,7 +25,15 @@ class ExpenseController extends Controller
             $month = $month ?: now()->format('Y-m');
         }
 
-        $applyFilters = function ($query) use ($from, $to, $month) {
+        $enabledCurrencies = $request->user()->enabledCurrencies();
+        $currency = $request->input('currency');
+
+        // An unknown (or missing) currency means "all currencies".
+        if (! in_array($currency, $enabledCurrencies, true)) {
+            $currency = null;
+        }
+
+        $applyFilters = function ($query) use ($from, $to, $month, $currency) {
             if ($from || $to) {
                 if ($from) {
                     $query->whereDate('date', '>=', $from);
@@ -35,6 +43,10 @@ class ExpenseController extends Controller
                 }
             } else {
                 $query->whereRaw("DATE_FORMAT(date, '%Y-%m') = ?", [$month]);
+            }
+
+            if ($currency) {
+                $query->whereHas('account', fn ($q) => $q->where('currency', $currency));
             }
 
             return $query;
@@ -68,6 +80,8 @@ class ExpenseController extends Controller
             'categories' => $categories,
             'accounts' => $accounts,
             'totals' => $totals,
+            'currency' => $currency,
+            'enabledCurrencies' => $enabledCurrencies,
             'month' => $month,
             'from' => $from,
             'to' => $to,

@@ -23,7 +23,8 @@
         "selectDate": "Select date",
         "previousMonth": "Previous month",
         "nextMonth": "Next month",
-        "today": "Today"
+        "today": "Today",
+        "all": "All"
     },
     "toast": {
         "created": "Added successfully.",
