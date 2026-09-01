@@ -96,10 +96,14 @@ class ExpenseController extends Controller
         $category = ExpenseCategory::findOrFail($data['category_id']);
         $this->authorize('view', $category);
 
+        $data['affects_balance'] = $data['affects_balance'] ?? true;
+
         DB::transaction(function () use ($user, $data) {
             $user->expenses()->create($data);
 
-            Account::where('id', $data['account_id'])->decrement('balance', $data['amount']);
+            if ($data['affects_balance']) {
+                Account::where('id', $data['account_id'])->decrement('balance', $data['amount']);
+            }
         });
 
         return back();
@@ -114,10 +118,18 @@ class ExpenseController extends Controller
         $category = ExpenseCategory::findOrFail($data['category_id']);
         $this->authorize('view', $category);
 
+        $data['affects_balance'] = $data['affects_balance'] ?? true;
+
         DB::transaction(function () use ($expense, $data) {
             // Revert the old amount from the old account, then apply the new amount to the new account.
-            Account::where('id', $expense->account_id)->increment('balance', $expense->amount);
-            Account::where('id', $data['account_id'])->decrement('balance', $data['amount']);
+            // Reference-only expenses were never deducted, so they are skipped on either side.
+            if ($expense->affects_balance) {
+                Account::where('id', $expense->account_id)->increment('balance', $expense->amount);
+            }
+
+            if ($data['affects_balance']) {
+                Account::where('id', $data['account_id'])->decrement('balance', $data['amount']);
+            }
 
             $expense->update($data);
         });
@@ -130,7 +142,9 @@ class ExpenseController extends Controller
         $this->authorize('delete', $expense);
 
         DB::transaction(function () use ($expense) {
-            Account::where('id', $expense->account_id)->increment('balance', $expense->amount);
+            if ($expense->affects_balance) {
+                Account::where('id', $expense->account_id)->increment('balance', $expense->amount);
+            }
 
             $expense->delete();
         });

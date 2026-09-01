@@ -25,6 +25,7 @@ class StoreExpenseRequest extends FormRequest
             'date' => 'required|date',
             'note' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
+            'affects_balance' => 'boolean',
         ];
     }
 }
