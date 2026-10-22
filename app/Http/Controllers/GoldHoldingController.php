@@ -17,10 +17,15 @@ class GoldHoldingController extends Controller
 
     public function index(Request $request): Response
     {
+        // iSagha only moves a few times an hour, so the snapshot is cached. The
+        // refresh flag is the way to insist on a fresh read before it expires.
+        if ($request->boolean('refresh')) {
+            $this->goldPriceService->forget();
+        }
+
         return Inertia::render('Gold/Index', [
             'holdings' => $request->user()->goldHoldings()->orderByDesc('created_at')->get(),
-            'goldPricePerGramUsd' => $this->goldPriceService->getPricePerGramUsd(),
-            'goldEgpPricesByKarat' => $this->goldPriceService->getEgpPricesByKarat(),
+            'market' => $this->goldPriceService->getMarket(),
         ]);
     }
 
