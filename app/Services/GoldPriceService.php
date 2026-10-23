@@ -143,6 +143,7 @@ class GoldPriceService
             'usd_per_gram_24k' => $ounce !== null
                 ? round($ounce['sell'] / self::TROY_OUNCE_IN_GRAMS, 4)
                 : null,
+            'charts' => $this->parseCharts($html),
             'updated_at' => $this->parseUpdatedAt($html),
             'fetched_at' => now()->toIso8601String(),
             'source_url' => self::SOURCE_URL,
@@ -272,6 +273,54 @@ class GoldPriceService
         ];
     }
 
+    /**
+     * iSagha renders its own long-range charts as images and hands the carousel
+     * a JSON list of them. The file name is the reliable part — the Arabic
+     * caption beside it is not — so karat and range are read from there.
+     *
+     * Only the ranges up to two years are kept; further back says little about
+     * what a holding is doing now.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function parseCharts(string $html): array
+    {
+        if (! preg_match("/items: JSON\.parse\('(.*?)'\)/su", $html, $match)) {
+            return [];
+        }
+
+        // The attribute holds a JS string literal, so its \uXXXX escapes have to be
+        // resolved before what is left is JSON. Decoding it as a JSON string first
+        // does exactly that, since the two share the same escape syntax.
+        $json = json_decode('"'.$match[1].'"');
+        $items = is_string($json) ? json_decode($json, true) : null;
+
+        if (! is_array($items)) {
+            return [];
+        }
+
+        $charts = [];
+
+        foreach ($items as $item) {
+            $url = $item['url'] ?? null;
+
+            if (! is_string($url) || ! preg_match('/\/((?:one|two)-year)-gold-(\d+)-ar\.png/', $url, $parts)) {
+                continue;
+            }
+
+            $charts[] = [
+                'range' => $parts[1],
+                'karat' => (int) $parts[2],
+                'url' => $url,
+                // The same chart is published per language; only the suffix differs.
+                'url_en' => str_replace('-ar.png', '-en.png', $url),
+                'growth' => is_numeric($item['growth'] ?? null) ? (float) $item['growth'] : null,
+            ];
+        }
+
+        return $charts;
+    }
+
     private function parseUpdatedAt(string $html): ?string
     {
         if (preg_match('/<time\b[^>]*datetime="([^"]+)"[^>]*data-testid="prices-updated"/u', $html, $match)) {
@@ -355,6 +404,7 @@ class GoldPriceService
             'pound' => null,
             'ounce' => null,
             'usd_per_gram_24k' => null,
+            'charts' => [],
             'updated_at' => null,
             'fetched_at' => null,
             'source_url' => self::SOURCE_URL,

@@ -371,7 +371,34 @@
             "gramUsd": "الجرام بالدولار",
             "gramUsdHint": "السعر العالمي لجرام بنفس العيار — بدون هامش السوق المحلي"
         },
-        "globalValueUsd": "القيمة عالميًا (دولار)"
+        "globalValueUsd": "القيمة عالميًا (دولار)",
+        "calculator": {
+            "title": "آلة حاسبة",
+            "subtitle": "جرّب أي وزن وعيار بأسعار اليوم — بدون ما تسجّل شي",
+            "grams": "الجرامات",
+            "karat": "العيار",
+            "manufacturing": "المصنعية للجرام",
+            "paid": "سعر الشراء (اختياري)",
+            "paidPlaceholder": "لو بدك تحسب الربح",
+            "buyCost": "سعره في السوق اليوم",
+            "sellValue": "لو بعته اليوم",
+            "spreadLoss": "الفرق لو اشتريت وبعت فورًا",
+            "spreadBreakdown": "{spread} فرق بيع وشراء + {manufacturing} مصنعية",
+            "profit": "الربح أو الخسارة",
+            "usdValue": "القيمة عالميًا (دولار)",
+            "needsPrices": "الحاسبة محتاجة أسعار السوق.",
+            "noManufacturing": "بدون مصنعية"
+        },
+        "history": {
+            "title": "الذهب طالع ولا نازل؟",
+            "oneYear": "آخر سنة",
+            "twoYear": "آخر سنتين",
+            "growthUp": "ارتفع {percent} خلال {range}",
+            "growthDown": "انخفض {percent} خلال {range}",
+            "chartAlt": "تغيّر سعر الذهب عيار {karat} خلال {range}",
+            "unavailable": "الرسوم البيانية مش متاحة حاليًا.",
+            "source": "الرسوم من آي صاغة"
+        }
     },
     "gifts": {
         "title": "الهدايا والأموال غير المتوقعة",

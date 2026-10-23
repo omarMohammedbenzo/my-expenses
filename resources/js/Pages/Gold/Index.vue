@@ -27,8 +27,6 @@ const props = defineProps({
 
 const karats = [9, 14, 18, 21, 22, 24];
 
-const TROY_OUNCE_IN_GRAMS = 31.1034768;
-
 function formatMoney(value, currency) {
     return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value);
 }
@@ -106,6 +104,98 @@ function gapLabel(gap) {
         amount: formatAmount(gap.amount),
     });
 }
+
+// --- Price history ------------------------------------------------------
+
+const charts = computed(() => props.market.charts ?? []);
+
+/** The karats iSagha publishes a chart for, which is fewer than it prices. */
+const chartKarats = computed(() => [...new Set(charts.value.map((chart) => chart.karat))].sort((a, b) => a - b));
+
+const historyRanges = ['one-year', 'two-year'];
+
+const historyRange = ref('two-year');
+
+// Open on a karat the portfolio actually holds, so the first chart is the
+// relevant one; 21 is the Egyptian default when nothing matches.
+const historyKarat = ref(null);
+
+const selectedHistoryKarat = computed(
+    () =>
+        historyKarat.value ??
+        chartKarats.value.find((karat) => heldKarats.value.has(karat)) ??
+        (chartKarats.value.includes(21) ? 21 : chartKarats.value[0]),
+);
+
+const currentChart = computed(
+    () =>
+        charts.value.find(
+            (chart) => chart.range === historyRange.value && chart.karat === selectedHistoryKarat.value,
+        ) ?? null,
+);
+
+function rangeLabel(range) {
+    return t(range === 'one-year' ? 'gold.history.oneYear' : 'gold.history.twoYear');
+}
+
+/**
+ * Always the English rendering, in either language. iSagha mirrors its Arabic
+ * charts to run right-to-left, which reads as a falling line when the price
+ * rose. A chart's time axis is worth more than its labels being translated.
+ */
+function chartUrl(chart) {
+    return chart.url_en;
+}
+
+const growthLabel = computed(() => {
+    const growth = currentChart.value?.growth;
+
+    if (growth == null) {
+        return null;
+    }
+
+    return t(growth >= 0 ? 'gold.history.growthUp' : 'gold.history.growthDown', {
+        percent: `${formatAmount(Math.abs(growth))}%`,
+        range: rangeLabel(historyRange.value),
+    });
+});
+
+// --- Calculator ---------------------------------------------------------
+
+const calculator = ref({ grams: 8, karat: 21, manufacturing: 0, paid: '' });
+
+/**
+ * A scratch pad over today's prices: nothing here is saved, it just answers
+ * "what would this piece cost, and what would it fetch back".
+ */
+const calculation = computed(() => {
+    const karat = Number(calculator.value.karat);
+    const grams = Number(calculator.value.grams);
+    const row = karatRow(karat);
+
+    if (!row || !(grams > 0)) {
+        return null;
+    }
+
+    const manufacturing = grams * (Number(calculator.value.manufacturing) || 0);
+    const buyCost = grams * row.sell + manufacturing;
+    const sellValue = grams * row.buy;
+    const paid = calculator.value.paid === '' ? null : Number(calculator.value.paid);
+    const pureGram = usdPerGram(karat);
+
+    return {
+        buyCost,
+        sellValue,
+        manufacturing,
+        spread: grams * row.spread,
+        // What the counter costs you on a same-day round trip: the dealer's
+        // margin plus the manufacturing that never comes back.
+        spreadLoss: buyCost - sellValue,
+        usdValue: pureGram === null ? null : grams * pureGram,
+        profit: paid === null || Number.isNaN(paid) ? null : sellValue - paid,
+        profitPercent: paid ? ((sellValue - paid) / paid) * 100 : null,
+    };
+});
 
 // --- Per holding --------------------------------------------------------
 
@@ -517,6 +607,163 @@ function confirmDelete() {
                                 </dd>
                                 <dd class="text-xs" :class="moveClass(market.ounce.change_percent)">
                                     <bdi>{{ market.ounce.change_percent == null ? '' : formatPercent(market.ounce.change_percent) }}</bdi>
+                                </dd>
+                            </div>
+                        </dl>
+                    </template>
+                </div>
+
+                <!-- Price history -->
+                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
+                    <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                        <h3 class="font-semibold text-gray-800 dark:text-gray-200">{{ t('gold.history.title') }}</h3>
+                        <div v-if="growthLabel" class="text-sm font-medium" :class="moveClass(currentChart.growth)">
+                            <bdi>{{ growthLabel }}</bdi>
+                        </div>
+                    </div>
+
+                    <div v-if="charts.length === 0" class="px-4 pb-4 text-sm text-gray-500 dark:text-gray-400">
+                        {{ t('gold.history.unavailable') }}
+                    </div>
+
+                    <template v-else>
+                        <div class="flex flex-wrap items-center gap-2 px-4 pb-3">
+                            <button
+                                v-for="range in historyRanges"
+                                :key="range"
+                                type="button"
+                                @click="historyRange = range"
+                                class="rounded-md px-3 py-1.5 text-sm font-medium"
+                                :class="range === historyRange
+                                    ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-800'
+                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'"
+                            >
+                                {{ rangeLabel(range) }}
+                            </button>
+
+                            <span class="mx-1 h-5 w-px bg-gray-200 dark:bg-gray-700"></span>
+
+                            <button
+                                v-for="karat in chartKarats"
+                                :key="karat"
+                                type="button"
+                                @click="historyKarat = karat"
+                                class="rounded-md px-3 py-1.5 text-sm font-medium"
+                                :class="karat === selectedHistoryKarat
+                                    ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-800'
+                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'"
+                            >
+                                {{ karat }}K
+                            </button>
+                        </div>
+
+                        <!-- iSagha renders these server side as images, on a light
+                             backing that has to stay light to remain readable. -->
+                        <div v-if="currentChart" class="px-4 pb-4">
+                            <div class="overflow-hidden rounded-lg bg-white p-2">
+                                <img
+                                    :src="chartUrl(currentChart)"
+                                    :alt="t('gold.history.chartAlt', { karat: currentChart.karat, range: rangeLabel(currentChart.range) })"
+                                    class="w-full"
+                                    loading="lazy"
+                                />
+                            </div>
+                            <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">{{ t('gold.history.source') }}</p>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Calculator -->
+                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
+                    <div class="px-4 py-3">
+                        <h3 class="font-semibold text-gray-800 dark:text-gray-200">{{ t('gold.calculator.title') }}</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('gold.calculator.subtitle') }}</p>
+                    </div>
+
+                    <div v-if="!marketAvailable" class="px-4 pb-4 text-sm text-gray-500 dark:text-gray-400">
+                        {{ t('gold.calculator.needsPrices') }}
+                    </div>
+
+                    <template v-else>
+                        <div class="grid grid-cols-1 gap-4 px-4 pb-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <div>
+                                <InputLabel :value="t('gold.calculator.grams')" />
+                                <TextInput v-model="calculator.grams" type="number" step="0.01" min="0" class="mt-1 block w-full" />
+                            </div>
+                            <div>
+                                <InputLabel :value="t('gold.calculator.karat')" />
+                                <SelectInput v-model="calculator.karat" class="mt-1 block w-full">
+                                    <option v-for="k in karats" :key="k" :value="k">{{ k }}K</option>
+                                </SelectInput>
+                            </div>
+                            <div>
+                                <InputLabel :value="t('gold.calculator.manufacturing')" />
+                                <TextInput v-model="calculator.manufacturing" type="number" step="0.01" min="0" class="mt-1 block w-full" />
+                            </div>
+                            <div>
+                                <InputLabel :value="t('gold.calculator.paid')" />
+                                <TextInput
+                                    v-model="calculator.paid"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    :placeholder="t('gold.calculator.paidPlaceholder')"
+                                    class="mt-1 block w-full"
+                                />
+                            </div>
+                        </div>
+
+                        <dl
+                            v-if="calculation"
+                            class="grid grid-cols-2 gap-px border-t border-gray-100 bg-gray-100 lg:grid-cols-4 dark:border-gray-700 dark:bg-gray-700"
+                        >
+                            <div class="bg-white p-4 dark:bg-gray-800">
+                                <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('gold.calculator.buyCost') }}</dt>
+                                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    {{ formatMoney(calculation.buyCost, 'EGP') }}
+                                </dd>
+                                <!-- Without it the figure is the bare metal, which reads
+                                     the same as a piece whose manufacturing was forgotten. -->
+                                <dd class="text-xs text-gray-400 dark:text-gray-500">
+                                    {{
+                                        calculation.manufacturing > 0
+                                            ? t('gold.includesManufacturing', { amount: formatMoney(calculation.manufacturing, 'EGP') })
+                                            : t('gold.calculator.noManufacturing')
+                                    }}
+                                </dd>
+                            </div>
+                            <div class="bg-white p-4 dark:bg-gray-800">
+                                <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('gold.calculator.sellValue') }}</dt>
+                                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    {{ formatMoney(calculation.sellValue, 'EGP') }}
+                                </dd>
+                            </div>
+                            <div class="bg-white p-4 dark:bg-gray-800">
+                                <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('gold.calculator.spreadLoss') }}</dt>
+                                <dd class="mt-1 text-lg font-semibold text-red-600 dark:text-red-400">
+                                    <bdi>{{ formatSignedMoney(-calculation.spreadLoss, 'EGP') }}</bdi>
+                                </dd>
+                                <dd class="text-xs text-gray-400 dark:text-gray-500">
+                                    {{
+                                        t('gold.calculator.spreadBreakdown', {
+                                            spread: formatMoney(calculation.spread, 'EGP'),
+                                            manufacturing: formatMoney(calculation.manufacturing, 'EGP'),
+                                        })
+                                    }}
+                                </dd>
+                            </div>
+                            <div class="bg-white p-4 dark:bg-gray-800">
+                                <dt class="text-xs text-gray-500 dark:text-gray-400">
+                                    {{ calculation.profit === null ? t('gold.calculator.usdValue') : t('gold.calculator.profit') }}
+                                </dt>
+                                <dd v-if="calculation.profit === null" class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    {{ calculation.usdValue === null ? '—' : formatMoney(calculation.usdValue, 'USD') }}
+                                </dd>
+                                <dd v-else class="mt-1 text-lg font-semibold" :class="moveClass(calculation.profit)">
+                                    <bdi>{{ formatSignedMoney(calculation.profit, 'EGP') }}</bdi>
+                                    <span v-if="calculation.profitPercent !== null" class="text-sm">
+                                        <bdi>({{ formatPercent(calculation.profitPercent) }})</bdi>
+                                    </span>
                                 </dd>
                             </div>
                         </dl>

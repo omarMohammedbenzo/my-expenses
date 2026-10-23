@@ -371,7 +371,34 @@
             "gramUsd": "Gram in USD",
             "gramUsdHint": "The global price for a gram of this purity — no local premium"
         },
-        "globalValueUsd": "Global value (USD)"
+        "globalValueUsd": "Global value (USD)",
+        "calculator": {
+            "title": "Calculator",
+            "subtitle": "Try any weight and karat at today's prices — nothing is saved",
+            "grams": "Grams",
+            "karat": "Karat",
+            "manufacturing": "Manufacturing per gram",
+            "paid": "Purchase price (optional)",
+            "paidPlaceholder": "To work out the profit",
+            "buyCost": "Market price today",
+            "sellValue": "If you sell today",
+            "spreadLoss": "Lost buying and selling at once",
+            "spreadBreakdown": "{spread} buy/sell spread + {manufacturing} manufacturing",
+            "profit": "Profit or loss",
+            "usdValue": "Global value (USD)",
+            "needsPrices": "The calculator needs market prices.",
+            "noManufacturing": "Metal only, no manufacturing"
+        },
+        "history": {
+            "title": "Is gold rising or falling?",
+            "oneYear": "Past year",
+            "twoYear": "Past two years",
+            "growthUp": "Up {percent} over {range}",
+            "growthDown": "Down {percent} over {range}",
+            "chartAlt": "Change in the {karat}K gold price over {range}",
+            "unavailable": "Charts are not available right now.",
+            "source": "Charts by iSagha"
+        }
     },
     "gifts": {
         "title": "Gifts & Windfalls",
