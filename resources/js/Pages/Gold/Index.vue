@@ -76,9 +76,26 @@ function karatRow(karat) {
 
 const heldKarats = computed(() => new Set(props.holdings.map((holding) => holding.karat)));
 
-const karatRows = computed(() =>
-    karats.map((karat) => ({ karat, ...karatRow(karat) })).filter((row) => row.sell != null),
-);
+/**
+ * Only the karats actually sitting in the portfolio — the rest is noise. With
+ * nothing recorded yet there is no portfolio to narrow to, so the whole board
+ * shows instead of an empty table.
+ */
+const karatRows = computed(() => {
+    const wanted = heldKarats.value.size > 0 ? karats.filter((karat) => heldKarats.value.has(karat)) : karats;
+
+    return wanted.map((karat) => ({ karat, ...karatRow(karat) })).filter((row) => row.sell != null);
+});
+
+/**
+ * The global spot price for a gram of that purity. It carries no local premium,
+ * so it sits beside the Egyptian figures rather than converting them.
+ */
+function usdPerGram(karat) {
+    const pureGram = props.market.usd_per_gram_24k;
+
+    return pureGram == null ? null : (pureGram * karat) / 24;
+}
 
 function gapLabel(gap) {
     if (!gap) {
@@ -184,16 +201,8 @@ function sum(items, fn) {
 
 const totalGrams = computed(() => sum(props.holdings, holdingGrams));
 
-const totalPureGrams = computed(() => sum(props.holdings, holdingPureGrams));
-
-const totalManufacturingCost = computed(() => sum(props.holdings, holdingManufacturingCost));
-
 const totalResaleValue = computed(() =>
     marketAvailable.value ? sum(props.holdings, (holding) => holdingResaleValue(holding) ?? 0) : null,
-);
-
-const totalReplacementValue = computed(() =>
-    marketAvailable.value ? sum(props.holdings, (holding) => holdingReplacementValue(holding) ?? 0) : null,
 );
 
 const totalValueUsd = computed(() =>
@@ -335,32 +344,6 @@ function confirmDelete() {
                         </div>
                     </div>
 
-                    <dl class="grid grid-cols-2 gap-px border-t border-gray-100 bg-gray-100 sm:grid-cols-4 dark:border-gray-700 dark:bg-gray-700">
-                        <div class="bg-white p-4 dark:bg-gray-800">
-                            <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('gold.totalGrams') }}</dt>
-                            <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">{{ formatAmount(totalGrams) }} g</dd>
-                        </div>
-                        <div class="bg-white p-4 dark:bg-gray-800">
-                            <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('gold.pureGoldEquivalent') }}</dt>
-                            <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">{{ formatAmount(totalPureGrams) }} g</dd>
-                        </div>
-                        <div class="bg-white p-4 dark:bg-gray-800">
-                            <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('gold.replacementValue') }}</dt>
-                            <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                {{ totalReplacementValue !== null ? formatMoney(totalReplacementValue, 'EGP') : '—' }}
-                            </dd>
-                            <dd v-if="totalManufacturingCost > 0" class="text-xs text-gray-400 dark:text-gray-500">
-                                {{ t('gold.includesManufacturing', { amount: formatMoney(totalManufacturingCost, 'EGP') }) }}
-                            </dd>
-                        </div>
-                        <div class="bg-white p-4 dark:bg-gray-800">
-                            <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('gold.globalValueUsd') }}</dt>
-                            <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                {{ totalValueUsd !== null ? formatMoney(totalValueUsd, 'USD') : '—' }}
-                            </dd>
-                        </div>
-                    </dl>
-
                     <div
                         v-if="totalNetProfit !== null"
                         class="flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 p-4 dark:border-gray-700"
@@ -377,6 +360,19 @@ function confirmDelete() {
                             </div>
                         </div>
                     </div>
+
+                    <dl class="grid grid-cols-2 gap-px border-t border-gray-100 bg-gray-100 dark:border-gray-700 dark:bg-gray-700">
+                        <div class="bg-white p-4 dark:bg-gray-800">
+                            <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('gold.totalGrams') }}</dt>
+                            <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">{{ formatAmount(totalGrams) }} g</dd>
+                        </div>
+                        <div class="bg-white p-4 dark:bg-gray-800">
+                            <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('gold.globalValueUsd') }}</dt>
+                            <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                {{ totalValueUsd !== null ? formatMoney(totalValueUsd, 'USD') : '—' }}
+                            </dd>
+                        </div>
+                    </dl>
 
                     <div
                         class="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-gray-100 px-4 py-2 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400"
@@ -445,6 +441,13 @@ function confirmDelete() {
                                         >
                                             {{ t('gold.market.buy') }}
                                         </th>
+                                        <th
+                                            v-if="market.usd_per_gram_24k != null"
+                                            class="px-4 py-2 text-end text-xs font-medium uppercase text-gray-500 dark:text-gray-400"
+                                            :title="t('gold.market.gramUsdHint')"
+                                        >
+                                            {{ t('gold.market.gramUsd') }}
+                                        </th>
                                         <th class="px-4 py-2 text-end text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                                             {{ t('gold.market.spread') }}
                                         </th>
@@ -460,19 +463,9 @@ function confirmDelete() {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                                    <tr
-                                        v-for="row in karatRows"
-                                        :key="row.karat"
-                                        :class="heldKarats.has(row.karat) ? 'bg-amber-50/60 dark:bg-amber-900/10' : ''"
-                                    >
+                                    <tr v-for="row in karatRows" :key="row.karat">
                                         <td class="whitespace-nowrap px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200">
                                             {{ row.karat }}K
-                                            <span
-                                                v-if="heldKarats.has(row.karat)"
-                                                class="ms-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
-                                            >
-                                                {{ t('gold.market.held') }}
-                                            </span>
                                             <span
                                                 v-if="row.derived"
                                                 class="ms-1 text-[10px] font-normal text-gray-400 dark:text-gray-500"
@@ -486,6 +479,12 @@ function confirmDelete() {
                                         </td>
                                         <td class="whitespace-nowrap px-4 py-2 text-end text-sm tabular-nums text-gray-700 dark:text-gray-300">
                                             {{ formatAmount(row.buy) }}
+                                        </td>
+                                        <td
+                                            v-if="market.usd_per_gram_24k != null"
+                                            class="whitespace-nowrap px-4 py-2 text-end text-sm tabular-nums text-gray-500 dark:text-gray-400"
+                                        >
+                                            {{ formatMoney(usdPerGram(row.karat), 'USD') }}
                                         </td>
                                         <td class="whitespace-nowrap px-4 py-2 text-end text-sm tabular-nums text-gray-500 dark:text-gray-400">
                                             {{ formatAmount(row.spread) }}
@@ -507,26 +506,7 @@ function confirmDelete() {
                             </table>
                         </div>
 
-                        <dl
-                            class="grid grid-cols-1 gap-px border-t border-gray-100 bg-gray-100 sm:grid-cols-3 dark:border-gray-700 dark:bg-gray-700"
-                        >
-                            <div v-if="market.pound" class="bg-white p-4 dark:bg-gray-800">
-                                <dt class="text-xs text-gray-500 dark:text-gray-400">
-                                    {{ t('gold.market.pound') }}
-                                    <span class="text-gray-400 dark:text-gray-500">· {{ t('gold.market.poundHint') }}</span>
-                                </dt>
-                                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    {{ formatMoney(market.pound.sell, 'EGP') }}
-                                    <span class="text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('gold.market.sell') }}</span>
-                                </dd>
-                                <dd class="text-sm text-gray-600 dark:text-gray-300">
-                                    {{ formatMoney(market.pound.buy, 'EGP') }}
-                                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ t('gold.market.buy') }}</span>
-                                </dd>
-                                <dd class="text-xs" :class="moveClass(market.pound.change)">
-                                    <bdi>{{ market.pound.change == null ? '' : formatSignedMoney(market.pound.change, 'EGP') }}</bdi>
-                                </dd>
-                            </div>
+                        <dl class="grid grid-cols-1 gap-px border-t border-gray-100 bg-gray-100 dark:border-gray-700 dark:bg-gray-700">
                             <div v-if="market.ounce" class="bg-white p-4 dark:bg-gray-800">
                                 <dt class="text-xs text-gray-500 dark:text-gray-400">
                                     {{ t('gold.market.ounce') }}
@@ -538,13 +518,6 @@ function confirmDelete() {
                                 <dd class="text-xs" :class="moveClass(market.ounce.change_percent)">
                                     <bdi>{{ market.ounce.change_percent == null ? '' : formatPercent(market.ounce.change_percent) }}</bdi>
                                 </dd>
-                            </div>
-                            <div v-if="market.usd_per_gram_24k != null" class="bg-white p-4 dark:bg-gray-800">
-                                <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('gold.market.gramUsd') }}</dt>
-                                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    {{ formatMoney(market.usd_per_gram_24k, 'USD') }}
-                                </dd>
-                                <dd class="text-xs text-gray-400 dark:text-gray-500">{{ t('gold.market.perGram') }}</dd>
                             </div>
                         </dl>
                     </template>
@@ -574,9 +547,6 @@ function confirmDelete() {
                                     >
                                         {{ holding.grams }}g &middot; {{ holding.karat }}K
                                     </span>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500">
-                                        {{ formatAmount(holdingPureGrams(holding)) }}g {{ t('gold.pureGoldEquivalent') }}
-                                    </span>
                                     <span
                                         v-if="holdingTodayChange(holding) !== null"
                                         class="text-xs font-medium"
@@ -591,12 +561,6 @@ function confirmDelete() {
                                 </div>
 
                                 <div class="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-                                    <div v-if="holdingMetalValue(holding) !== null">
-                                        <div class="text-xs text-gray-400 dark:text-gray-500">{{ t('gold.metalValue') }}</div>
-                                        <div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                            {{ formatMoney(holdingMetalValue(holding), 'EGP') }}
-                                        </div>
-                                    </div>
                                     <div v-if="holdingReplacementValue(holding) !== null">
                                         <div class="text-xs text-gray-400 dark:text-gray-500">{{ t('gold.replacementValue') }}</div>
                                         <div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
